@@ -1,0 +1,3 @@
+rootProject.name = 'FoodTruckReact'
+
+include ':app'
