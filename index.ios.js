@@ -74,27 +74,38 @@ var FoodTrucks = React.createClass({
   render() {
     console.log("Vendor", this.state.vendors);
     var rows = [];
+    var vendorPins = [];
 
     this.state.vendors.forEach(function(vendor){
       rows.push(<FoodTruckListView vendor={vendor} key={vendor.name} />);
+      vendorPin = {
+        latitude: vendor.latitude,
+        longitude: vendor.longitude,
+        title: vendor.name,
+        animateDrop: true,
+      }
+      // TODO add more vendors to see if this array works with multiple
+      vendorPins.push(vendorPin);
     });
     return (
       <View style={[styles.container, this.border('yellow')]}>
-        {this.mapView()}
+        {this.mapView(vendorPins)}
         <View style={[styles.bottom, this.border('blue')]}>
           {rows}
         </View>
       </View>
     );
   },
-  mapView() {
+  mapView(vendorPins) {
+    console.log("Vendor Pins", vendorPins)
     return(
       <View style={[styles.top, this.border('green')]}>
         {this.state.positionAquired ?
           <MapView
-            annotations={[this.state.pin]}
+            annotations={vendorPins}
             onRegionChangeComplete={_.debounce(this.onRegionChangeComplete, 2000)}
             region={this.state.searchArea}
+            showsUserLocation={true}
             style={styles.map}
           /> :
           <Text>Loading...</Text>
@@ -138,6 +149,8 @@ var FoodTrucks = React.createClass({
 
 var FoodTruckListView = React.createClass({
   render(){
+      vendorLat = this.props.vendor.latitude
+      vendorLong = this.props.vendor.longitude
     return(
       <View style={[this.border('red'), styles.foodTruckListItem]}>
         <View style={[this.textBorder(), styles.foodTruckListItemInfo]}>
@@ -160,6 +173,8 @@ var FoodTruckListView = React.createClass({
         </View>
         <View style={[this.textBorder(), styles.foodTruckListItemMap]}>
           <MapView
+            annotations={[{latitude: vendorLat, longitude: vendorLong}]}
+            region={{latitude: vendorLat, longitude: vendorLong}}
             style={styles.foodTruckMap}
           />
         </View>
