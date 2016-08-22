@@ -7,23 +7,69 @@ import {
   Text,
   View
 } from 'react-native'
+import _ from 'lodash';
 
 // Get components from other files
-import FoodType from './utilities/foodTypes.js'
 import Api from './utilities/api.js'
-
-var FOODTYPES = ['Dominican', 'American', 'Italian', 'Chinese', 'Mexican']
 
 // Create a react component
 var FoodTrucks = React.createClass({
   getInitialState() {
     return {
-      pin: {
+      searchArea: {
         latitude: 0,
         longitude: 0,
       },
+      coordinates: {
+        southwestPoint: [0, 0],
+        northeastPoint: [0, 0]
+      },
       vendors: [],
+      positionAquired: false,
     };
+  },
+  getInitialPosition(){
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        this.setState({
+          searchArea: {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            latitudeDelta: 5,
+            longitudeDelta: 5
+          },
+          pin: {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            title: 'You',
+            tintColor: MapView.PinColors.RED,
+          },
+          positionAquired: true
+        });
+      },
+      (error) => alert(error.message),
+      {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000}
+    );
+  },
+  getPosition(){
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        this.setState({
+          searchArea: {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            latitudeDelta: 5,
+            longitudeDelta: 5
+          },
+          positionAquired: true
+        });
+      },
+      (error) => alert(error.message),
+      {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000}
+    );
+  },
+  componentDidMount() {
+    this.getInitialPosition()
   },
   render() {
     console.log("Vendor", this.state.vendors);
@@ -44,28 +90,37 @@ var FoodTrucks = React.createClass({
   mapView() {
     return(
       <View style={[styles.top, this.border('green')]}>
-        <MapView
-          annotations={[this.state.pin]}
-          onRegionChangeComplete={this.onRegionChangeComplete}
-          style={styles.map}
-        />
+        {this.state.positionAquired ?
+          <MapView
+            annotations={[this.state.pin]}
+            onRegionChangeComplete={_.debounce(this.onRegionChangeComplete, 2000)}
+            region={this.state.searchArea}
+            style={styles.map}
+          /> :
+          <Text>Loading...</Text>
+        }
       </View>
     );
   },
   onRegionChangeComplete(region) {
     this.setState({
-      pin: {
+      searchArea: {
         latitude: region.latitude,
-        longitude: region.longitude
+        longitude: region.longitude,
+        latitudeDelta: region.latitudeDelta,
+        longitudeDelta: region.longitudeDelta
+      },
+      coordinates: {
+        southwestPoint: [(region.latitude - (region.latitudeDelta/2)), (region.longitude - (region.longitudeDelta/2))],
+        northeastPoint: [(region.latitude + (region.latitudeDelta/2)), (region.longitude + (region.longitudeDelta/2))]
       },
     })
-
-    Api(region.latitude, region.longitude)
+    Api(this.state.coordinates.southwestPoint, this.state.coordinates.northeastPoint)
     .then((response) => {
       this.setState({
         vendors: response.vendors
-      });
-    });
+      })
+    })
   },
   border(color){
     return {
@@ -123,7 +178,6 @@ var FoodTruckListView = React.createClass({
       borderWidth: 1,
     }
   },
-
 })
 
 
