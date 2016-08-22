@@ -106,7 +106,6 @@ var FoodTrucks = React.createClass({
     );
   },
   onRegionChangeComplete(region) {
-    console.log("running region change !!")
     this.setState({
       searchArea: {
         latitude: region.latitude,
@@ -114,14 +113,17 @@ var FoodTrucks = React.createClass({
         latitudeDelta: region.latitudeDelta,
         longitudeDelta: region.longitudeDelta
       },
+      coordinates: {
+        southwestPoint: [(region.latitude - (region.latitudeDelta/2)), (region.longitude - (region.longitudeDelta/2))],
+        northeastPoint: [(region.latitude + (region.latitudeDelta/2)), (region.longitude + (region.longitudeDelta/2))]
+      },
     })
-
-    Api(region.latitude, region.longitude)
+    Api(this.state.coordinates.southwestPoint, this.state.coordinates.northeastPoint)
     .then((response) => {
       this.setState({
         vendors: response.vendors
-      });
-    });
+      })
+    })
   },
   border(color){
     return {
