@@ -10,10 +10,7 @@ import {
 import _ from 'lodash';
 
 // Get components from other files
-import FoodType from './utilities/foodTypes.js'
 import Api from './utilities/api.js'
-
-var FOODTYPES = ['Dominican', 'American', 'Italian', 'Chinese', 'Mexican']
 
 // Create a react component
 var FoodTrucks = React.createClass({
@@ -181,7 +178,6 @@ var FoodTruckListView = React.createClass({
       borderWidth: 1,
     }
   },
-
 })
 
 
