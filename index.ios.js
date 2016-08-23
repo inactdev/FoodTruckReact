@@ -2,18 +2,34 @@
 import React, {Component} from 'react'
 import {
   AppRegistry,
-  NavigatorIOS,
+  Navigator,
   StyleSheet,
 } from 'react-native'
 
 // Get components from other files
 import TruckList from './utilities/truckList.ios.js'
+import Truck from './utilities/truck.ios.js'
 
 // Create a react component
 var FoodTrucks = React.createClass({
+  configureScene(route, routeStack){
+   return Navigator.SceneConfigs.FloatFromRight
+  },
+  renderScene(route, navigator) {
+    if(route.title === 'Truck List') {
+      return <TruckList navigator={navigator} {...route.passProps} />
+    }
+    if(route.title === 'Truck') {
+      return <Truck navigator={navigator} {...route.passProps} />
+    }
+  },
   render() {
     return (
-      <NavigatorIOS style={styles.container} initialRoute={{ title: 'Truck List', component: TruckList }}/>
+      <Navigator
+        configureScene={ this.configureScene }
+        style={styles.container}
+        initialRoute={{ title: 'Truck List'}}
+        renderScene={ this.renderScene }/>
     );
   },
 })

@@ -4,7 +4,6 @@ import {
   AppRegistry,
   Dimensions,
   MapView,
-  Navigator,
   ScrollView,
   StyleSheet,
   Text,
@@ -15,6 +14,7 @@ import _ from 'lodash';
 
 // Get components from other files
 import Api from './api.js'
+import Truck from './truck.ios.js'
 
 // Create a react component
 var TruckList = React.createClass({
@@ -72,9 +72,6 @@ var TruckList = React.createClass({
       {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000}
     );
   },
-  goToTruck(){
-
-  },
   componentDidMount() {
     this.getInitialPosition()
   },
@@ -84,16 +81,16 @@ var TruckList = React.createClass({
     var vendorPins = [];
     var windowWidth = Dimensions.get('window').width;
     var noTrucksFontSize = windowWidth/12;
+    var navigator = this.props.navigator;
 
     this.state.vendors.forEach(function(vendor){
-      rows.push(<FoodTruckListView vendor={vendor} key={vendor.name} />);
+      rows.push(<FoodTruckListView vendor={vendor} key={vendor.name} navigator={navigator}/>);
       vendorPin = {
         latitude: vendor.latitude,
         longitude: vendor.longitude,
         title: vendor.name,
         animateDrop: true,
       }
-      // TODO add more vendors to see if this array works with multiple
       vendorPins.push(vendorPin);
     });
 
@@ -162,6 +159,13 @@ var TruckList = React.createClass({
 });
 
 var FoodTruckListView = React.createClass({
+  goToVendor(vendor){
+    this.props.navigator.push({
+      title: 'Truck',
+      component: Truck,
+      passProps: {vendor: vendor},
+    });
+  },
   render(){
     var vendorLat = this.props.vendor.latitude
     var vendorLong = this.props.vendor.longitude
@@ -171,7 +175,7 @@ var FoodTruckListView = React.createClass({
     var truckFoodTypeFontSize = windowHeight/42
 
     return(
-      // <TouchableHighlight onPress={this.navigate.bind(this, this.props.key)}>
+      <TouchableHighlight style={styles.buttonContainer} onPress={() => this.goToVendor(this.props.vendor)}>
         <View style={[this.border('red'), this.tileSize(truckTileHeight), styles.foodTruckListItem]}>
           <View style={[this.textBorder(), styles.foodTruckListItemInfo]}>
             <View style={[this.textBorder(), styles.foodTruckListItemHeader]}>
@@ -202,7 +206,7 @@ var FoodTruckListView = React.createClass({
             />
           </View>
         </View>
-      // </TouchableHighlight>
+      </TouchableHighlight>
     );
   },
   border(color){
@@ -231,6 +235,9 @@ var styles = StyleSheet.create({
     flex: 1, // fill the entire screen
     alignItems: `stretch`,
     backgroundColor: '#FAFF9B'
+  },
+  buttonContainer: {
+    flex: 1,
   },
   map: {
     flex: 1,
