@@ -2,6 +2,7 @@
 import React, {Component} from 'react'
 import {
   AppRegistry,
+  Dimensions,
   MapView,
   StyleSheet,
   Text,
@@ -74,27 +75,46 @@ var FoodTrucks = React.createClass({
   render() {
     console.log("Vendor", this.state.vendors);
     var rows = [];
+    var vendorPins = [];
+    var windowWidth = Dimensions.get('window').width;
+    var noTrucksFontSize = windowWidth/10;
 
     this.state.vendors.forEach(function(vendor){
       rows.push(<FoodTruckListView vendor={vendor} key={vendor.name} />);
+      vendorPin = {
+        latitude: vendor.latitude,
+        longitude: vendor.longitude,
+        title: vendor.name,
+        animateDrop: true,
+      }
+      // TODO add more vendors to see if this array works with multiple
+      vendorPins.push(vendorPin);
     });
+
+    if (rows.length == 0) {
+      lowerBoxDisplay = <View style={[styles.noTextView, {width: windowWidth}]}><Text style={[styles.noTrucksText, {fontSize: noTrucksFontSize}, {fontFamily: 'Verdana'}]}>No Trucks Found :(</Text></View>;
+    } else {
+      lowerBoxDisplay = rows;
+    }
     return (
       <View style={[styles.container, this.border('yellow')]}>
-        {this.mapView()}
+        {this.mapView(vendorPins)}
         <View style={[styles.bottom, this.border('blue')]}>
-          {rows}
+          {lowerBoxDisplay}
         </View>
       </View>
     );
   },
-  mapView() {
+  mapView(vendorPins) {
+    console.log("Vendor Pins", vendorPins)
     return(
-      <View style={[styles.top, this.border('green')]}>
+      <View style={[styles.top, {borderColor: 'black'}, {borderWidth: 1}]}>
         {this.state.positionAquired ?
           <MapView
-            annotations={[this.state.pin]}
+            annotations={vendorPins}
             onRegionChangeComplete={_.debounce(this.onRegionChangeComplete, 2000)}
             region={this.state.searchArea}
+            showsUserLocation={true}
             style={styles.map}
           /> :
           <Text>Loading...</Text>
@@ -124,8 +144,8 @@ var FoodTrucks = React.createClass({
   },
   border(color){
     return {
-      borderColor: color,
-      borderWidth: 4,
+      // borderColor: color,
+      // borderWidth: 4,
     }
   },
   textBorder(){
@@ -138,11 +158,13 @@ var FoodTrucks = React.createClass({
 
 var FoodTruckListView = React.createClass({
   render(){
+      vendorLat = this.props.vendor.latitude
+      vendorLong = this.props.vendor.longitude
     return(
       <View style={[this.border('red'), styles.foodTruckListItem]}>
         <View style={[this.textBorder(), styles.foodTruckListItemInfo]}>
           <View style={[this.textBorder(), styles.foodTruckListItemHeader]}>
-            <Text style={[this.textBorder(), styles.foodTruckNameText]}>
+            <Text style={[this.textBorder(), styles.foodTruckNameText], {fontFamily: 'Verdana'}}>
               {this.props.vendor.name}
             </Text>
             <Text style={[this.textBorder(), styles.foodTruckDistanceText]}>
@@ -160,6 +182,8 @@ var FoodTruckListView = React.createClass({
         </View>
         <View style={[this.textBorder(), styles.foodTruckListItemMap]}>
           <MapView
+            annotations={[{latitude: vendorLat, longitude: vendorLong}]}
+            region={{latitude: vendorLat, longitude: vendorLong}}
             style={styles.foodTruckMap}
           />
         </View>
@@ -168,14 +192,14 @@ var FoodTruckListView = React.createClass({
   },
   border(color){
     return {
-      borderColor: color,
-      borderWidth: 4,
+      // borderColor: color,
+      // borderWidth: 4,
     }
   },
   textBorder(){
     return {
-      borderColor: 'black',
-      borderWidth: 1,
+      // borderColor: 'black',
+      // borderWidth: 1,
     }
   },
 })
@@ -186,9 +210,20 @@ var styles = StyleSheet.create({
   container: {
     flex: 1, // fill the entire screen
     alignItems: `stretch`,
+    backgroundColor: '#f1c40f'
   },
   map: {
     flex: 1,
+  },
+  noTrucksText: {
+    color: '#e74c3c',
+    textAlign: 'center'
+  },
+  noTextView: {
+    flex: 1, // fill the entire screen
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
   foodTruckMap: {
     flex: 1,
