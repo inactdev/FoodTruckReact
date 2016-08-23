@@ -4,6 +4,7 @@ import {
   AppRegistry,
   Dimensions,
   MapView,
+  ScrollView,
   StyleSheet,
   Text,
   View
@@ -36,8 +37,8 @@ var FoodTrucks = React.createClass({
           searchArea: {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
-            latitudeDelta: 5,
-            longitudeDelta: 5
+            latitudeDelta: .2,
+            longitudeDelta: .2
           },
           pin: {
             latitude: position.coords.latitude,
@@ -59,8 +60,8 @@ var FoodTrucks = React.createClass({
           searchArea: {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
-            latitudeDelta: 5,
-            longitudeDelta: 5
+            latitudeDelta: .2,
+            longitudeDelta: .2
           },
           positionAquired: true
         });
@@ -77,7 +78,7 @@ var FoodTrucks = React.createClass({
     var rows = [];
     var vendorPins = [];
     var windowWidth = Dimensions.get('window').width;
-    var noTrucksFontSize = windowWidth/10;
+    var noTrucksFontSize = windowWidth/12;
 
     this.state.vendors.forEach(function(vendor){
       rows.push(<FoodTruckListView vendor={vendor} key={vendor.name} />);
@@ -92,9 +93,9 @@ var FoodTrucks = React.createClass({
     });
 
     if (rows.length == 0) {
-      lowerBoxDisplay = <View style={[styles.noTextView, {width: windowWidth}]}><Text style={[styles.noTrucksText, {fontSize: noTrucksFontSize}, {fontFamily: 'Verdana'}]}>No Trucks Found :(</Text></View>;
+      lowerBoxDisplay = <View style={[styles.noTextView, {width: windowWidth}]}><Text style={[styles.noTrucksText, {fontSize: noTrucksFontSize}, {fontFamily: 'Chalkduster'}]}>No Trucks Found :(</Text></View>;
     } else {
-      lowerBoxDisplay = rows;
+      lowerBoxDisplay = <ScrollView style={styles.scrollView}>{rows}</ScrollView>;
     }
     return (
       <View style={[styles.container, this.border('yellow')]}>
@@ -106,7 +107,6 @@ var FoodTrucks = React.createClass({
     );
   },
   mapView(vendorPins) {
-    console.log("Vendor Pins", vendorPins)
     return(
       <View style={[styles.top, {borderColor: 'black'}, {borderWidth: 1}]}>
         {this.state.positionAquired ?
@@ -158,13 +158,18 @@ var FoodTrucks = React.createClass({
 
 var FoodTruckListView = React.createClass({
   render(){
-      vendorLat = this.props.vendor.latitude
-      vendorLong = this.props.vendor.longitude
+    var vendorLat = this.props.vendor.latitude
+    var vendorLong = this.props.vendor.longitude
+    var windowHeight = Dimensions.get('window').height;
+    var truckTileHeight = windowHeight/8
+    var truckNameFontSize = windowHeight/28
+    var truckFoodTypeFontSize = windowHeight/42
+
     return(
-      <View style={[this.border('red'), styles.foodTruckListItem]}>
+      <View style={[this.border('red'), this.tileSize(truckTileHeight), styles.foodTruckListItem]}>
         <View style={[this.textBorder(), styles.foodTruckListItemInfo]}>
           <View style={[this.textBorder(), styles.foodTruckListItemHeader]}>
-            <Text style={[this.textBorder(), styles.foodTruckNameText], {fontFamily: 'Verdana'}}>
+            <Text style={[this.textBorder(), styles.foodTruckNameText, {fontSize: truckNameFontSize, fontWeight: 'bold'}]}>
               {this.props.vendor.name}
             </Text>
             <Text style={[this.textBorder(), styles.foodTruckDistanceText]}>
@@ -172,7 +177,7 @@ var FoodTruckListView = React.createClass({
             </Text>
           </View>
           <View style={[this.textBorder(), styles.foodTruckListItemFooter]}>
-            <Text style={[this.textBorder(), styles.foodTruckTypeText]}>
+            <Text style={[this.textBorder(), styles.foodTruckTypeText, {fontSize: truckFoodTypeFontSize, fontWeight: 'bold'}]}>
               {this.props.vendor.food_type}
             </Text>
             <Text style={[this.textBorder(), styles.foodTruckDescriptionText]}>
@@ -183,8 +188,11 @@ var FoodTruckListView = React.createClass({
         <View style={[this.textBorder(), styles.foodTruckListItemMap]}>
           <MapView
             annotations={[{latitude: vendorLat, longitude: vendorLong}]}
-            region={{latitude: vendorLat, longitude: vendorLong}}
+            region={{latitude: vendorLat, longitude: vendorLong, latitudeDelta: .2, longitudeDelta: .2}}
+            scrollEnabled={false}
+            showsUserLocation={true}
             style={styles.foodTruckMap}
+            zoomEnabled={false}
           />
         </View>
       </View>
@@ -202,6 +210,11 @@ var FoodTruckListView = React.createClass({
       // borderWidth: 1,
     }
   },
+  tileSize(height) {
+    return {
+      height: height,
+    }
+  },
 })
 
 
@@ -210,13 +223,13 @@ var styles = StyleSheet.create({
   container: {
     flex: 1, // fill the entire screen
     alignItems: `stretch`,
-    backgroundColor: '#f1c40f'
+    backgroundColor: '#FAFF9B'
   },
   map: {
     flex: 1,
   },
   noTrucksText: {
-    color: '#e74c3c',
+    color: '#FC5441',
     textAlign: 'center'
   },
   noTextView: {
@@ -238,16 +251,24 @@ var styles = StyleSheet.create({
     flex: 1,
   },
   foodTruckDescriptionText: {
+    color: '#FC5441',
+    fontFamily: 'Chalkduster',
     flex: 2,
   },
   foodTruckNameText: {
+    color: '#FC5441',
+    fontFamily: 'Chalkduster',
     flex: 4
   },
   foodTruckDistanceText: {
+    color: '#FC5441',
+    fontFamily: 'Copperplate-Bold',
     flex: 1,
     textAlign: 'right'
   },
   foodTruckTypeText: {
+    color: '#FC5441',
+    fontFamily: 'Chalkduster',
     flex: 2
   },
   foodTruckListItemHeader:{
@@ -264,10 +285,19 @@ var styles = StyleSheet.create({
     flex: 4
   },
   foodTruckListItem: {
+    flexDirection: 'row',
+    borderBottomColor: 'black',
+    borderBottomWidth: 1,
+  },
+  scrollView: {
     flex: 1,
-    flexDirection: 'row'
   }
 });
+
+// Futura-CondensedExtraBold
+// Futura-CondensedExtraBold
+// Futura-CondensedExtraBold
+// GillSans-UltraBold
 
 // Show the react component on the screen
 AppRegistry.registerComponent('FoodTruckReact', () => FoodTrucks)
