@@ -159,11 +159,16 @@ var TruckList = React.createClass({
 });
 
 var FoodTruckListView = React.createClass({
+  onPress() {
+    alert("YO FROM RIGHT BUTTON")
+  },
   goToVendor(vendor){
     this.props.navigator.push({
       title: 'Truck',
       component: Truck,
       passProps: {vendor: vendor},
+      onPress: this.onPress,
+      rightText: 'ALERT!'
     });
   },
   render(){
